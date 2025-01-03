@@ -1,7 +1,8 @@
 schema_version = 1
 
 project {
-  license        = "MIT License"
+  license        = "MIT"
+  copyright_holder = "Ivan Brykalov, ivbrykalov@gmail.com"
   copyright_year = 2025
 
   header_ignore = [

@@ -1,3 +1,6 @@
+// Copyright (c) Ivan Brykalov, ivbrykalov@gmail.com
+// SPDX-License-Identifier: MIT
+
 package helper
 
 import (
@@ -14,21 +17,6 @@ import (
 
 // vmLocks stores a *sync.Mutex for each VM by its ID.
 var vmLocks sync.Map // map[int64]*sync.Mutex.
-
-// GetVMLock returns a mutex for the given vmID. If the mutex does not exist, it is created.
-//func GetVMLock(vmID int64) *sync.Mutex {
-//	actual, _ := vmLocks.LoadOrStore(vmID, &sync.Mutex{})
-//
-//	// Perform a checked type assertion
-//	mutex, ok := actual.(*sync.Mutex)
-//	if !ok {
-//		// Handle the unexpected type case
-//		// You can choose to panic, return an error, or handle it gracefully
-//		panic(fmt.Sprintf("vmLocks contains a value of unexpected type for vmID %d", vmID))
-//	}
-//
-//	return mutex
-//}
 
 func GetVMLock(vmID int64) (*sync.Mutex, error) {
 	actual, _ := vmLocks.LoadOrStore(vmID, &sync.Mutex{})

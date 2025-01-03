@@ -1,3 +1,6 @@
+// Copyright (c) Ivan Brykalov, ivbrykalov@gmail.com
+// SPDX-License-Identifier: MIT
+
 package models
 
 import (
