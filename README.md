@@ -1,4 +1,4 @@
-# Terraform Provider Vstack
+# Terraform Provider vStack
 
 ## Overview
 The Terraform vStack Provider allows you to manage vStack resources using HashiCorp Terraform. This provider enables you to create, update, and delete virtual machines (VMs) and network interface cards (NICs) within your vStack environment seamlessly.
