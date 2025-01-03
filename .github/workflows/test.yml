@@ -81,5 +81,11 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
+          TF_VAR_vm_id: ${{ secrets.TF_VAR_VM_ID }}
+          TF_VAR_vdc_id: ${{ secrets.TF_VAR_VDC_ID }}
+          TF_VAR_network_id: ${{ secrets.TF_VAR_NETWORK_ID }}
+          TF_VAR_password: ${{ secrets.TF_VAR_PASSWORD }}
+          TF_VAR_username: ${{ secrets.TF_VAR_USERNAME }}
+          TF_VAR_host: ${{ secrets.TF_VAR_HOST }}
         run: go test -v -cover ./internal/provider/
         timeout-minutes: 10
