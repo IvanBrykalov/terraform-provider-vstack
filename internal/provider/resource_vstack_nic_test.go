@@ -23,11 +23,9 @@ func TestAccVStackNIC(t *testing.T) {
 	resourceConfigTemplate := `
 variable "vdc_id" {
   type     = number
-  nullable = false
 }
 variable "network_id" {
   type     = number
-  nullable = false
 }
 
 resource "vstack_vm" "test_vm3" {
@@ -100,11 +98,9 @@ resource "vstack_nic" "test_vm3_nic1" {
 	resourceConfigUpdateTemplate := `
 variable "vdc_id" {
  type     = number
- nullable = false
 }
 variable "network_id" {
  type     = number
- nullable = false
 }
 
 resource "vstack_vm" "test_vm3" {

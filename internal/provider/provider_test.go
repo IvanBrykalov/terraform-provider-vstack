@@ -4,25 +4,25 @@
 package provider
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"os"
+	"testing"
 )
 
 // providerConfigTemplate is a template for the provider configuration using environment variables.
 const providerConfigTemplate = `
 variable "host" {
   type        = string
-  nullable = false
   sensitive   = true
 }
 variable "username" {
   type        = string
-  nullable = false
   sensitive   = true
 }
 variable "password" {
   type        = string
-  nullable = false
   sensitive   = true
 }
 provider "vstack" {
@@ -41,3 +41,34 @@ var (
 		"vstack": providerserver.NewProtocol6WithError(New("test")()),
 	}
 )
+
+// TestMain is the entry point for all tests in this package. It validates that
+// all required environment variables are present. If any are missing, the tests
+// will fail immediately (exit code 1).
+func TestMain(m *testing.M) {
+	requiredVars := []string{
+		"TF_VAR_host",
+		"TF_VAR_username",
+		"TF_VAR_password",
+		"TF_VAR_vdc_id",
+		"TF_VAR_network_id",
+		"TF_VAR_vm_id",
+	}
+
+	var missingVars []string
+	for _, v := range requiredVars {
+		if os.Getenv(v) == "" {
+			missingVars = append(missingVars, v)
+		}
+	}
+
+	if len(missingVars) > 0 {
+		fmt.Printf("ERROR: Missing required environment variables: %v\n", missingVars)
+		// Approach #1: Exit with a non-zero status, marking tests as failed.
+		os.Exit(1)
+	}
+
+	// If all variables are set, proceed with the tests.
+	code := m.Run()
+	os.Exit(code)
+}

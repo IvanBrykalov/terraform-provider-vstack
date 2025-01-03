@@ -14,7 +14,6 @@ func TestAccVStackVM(t *testing.T) {
 	resourceConfigTemplate := `
 variable "vdc_id" {
   type        = number
-  nullable    = false
 }
 
 resource "vstack_vm" "test_vm2" {
@@ -84,7 +83,6 @@ resource "vstack_vm" "test_vm2" {
 	resourceConfigUpdateTemplate := `
 variable "vdc_id" {
   type        = number
-  nullable    = false
 }
 
 resource "vstack_vm" "test_vm2" {

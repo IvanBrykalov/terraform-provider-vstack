@@ -14,7 +14,6 @@ func TestAccVStackVMGetDataSource(t *testing.T) {
 	dataSourceConfigTemplate := `
 variable "vm_id" {
   type        = number
-  nullable    = false
 }
 data "vstack_vm_get" "test" {
   id = var.vm_id
