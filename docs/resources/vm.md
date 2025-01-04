@@ -69,7 +69,9 @@ resource "vstack_vm" "example" {
 
 - `cpus` (Number) Number of CPUs assigned to the virtual machine.
 - `disks` (Attributes List) List of disks attached to the virtual machine. (see [below for nested schema](#nestedatt--disks))
+- `guest` (Attributes) Guest customization for the VM. (see [below for nested schema](#nestedatt--guest))
 - `name` (String) Name of the virtual machine.
+- `os_profile` (String) Operating system profile for the virtual machine.
 - `ram` (Number) Amount of RAM in Mega bytes for the virtual machine.
 - `vdc_id` (Number) Virtual Data Center ID for the virtual machine.
 
@@ -79,9 +81,7 @@ resource "vstack_vm" "example" {
 - `boot_media` (Number) ID of the boot media.
 - `cpu_priority` (Number) CPU priority of the virtual machine (1-20).
 - `description` (String) Description of the virtual machine.
-- `guest` (Attributes) Guest customization for the VM. (see [below for nested schema](#nestedatt--guest))
 - `node` (Number) Node on which the VM is running.
-- `os_profile` (String) Operating system profile for the virtual machine.
 - `os_type` (Number) Operating system type for the virtual machine.
 - `pool_selector` (String) The pool where the virtual machine resides.
 - `vcpu_class` (Number) Class of the vCPU for the virtual machine.
@@ -130,20 +130,35 @@ Optional:
 <a id="nestedatt--guest"></a>
 ### Nested Schema for `guest`
 
+Required:
+
+- `hostname` (String) Hostname for the guest OS.
+- `users` (Attributes Map) List of users in the guest OS. (see [below for nested schema](#nestedatt--guest--users))
+
 Optional:
 
 - `boot_cmds` (List of String) List of boot commands for the guest OS.
-- `hostname` (String) Hostname for the guest OS.
 - `resolver` (Attributes) DNS resolver settings for the guest OS. (see [below for nested schema](#nestedatt--guest--resolver))
 - `run_cmds` (List of String) List of commands to run in the guest OS.
 - `ssh_password_auth` (Number) Enables or disables SSH password authentication.
-- `users` (Attributes Map) List of users in the guest OS. (see [below for nested schema](#nestedatt--guest--users))
 
 Read-Only:
 
 - `ram_balloon_performed` (Number) RAM used by the guest operating system in MB.
 - `ram_balloon_requested` (Number) RAM used by the guest operating system in MB.
 - `ram_used` (Number) RAM used by the guest operating system in MB.
+
+<a id="nestedatt--guest--users"></a>
+### Nested Schema for `guest.users`
+
+Required:
+
+- `password` (String) Password for the user.
+
+Optional:
+
+- `ssh_authorized_keys` (List of String) SSH public keys.
+
 
 <a id="nestedatt--guest--resolver"></a>
 ### Nested Schema for `guest.resolver`
@@ -152,15 +167,6 @@ Optional:
 
 - `name_server` (List of String) DNS name servers.
 - `search` (String) DNS search domain.
-
-
-<a id="nestedatt--guest--users"></a>
-### Nested Schema for `guest.users`
-
-Optional:
-
-- `password` (String) Password for the user.
-- `ssh_authorized_keys` (List of String) SSH public keys.
 
 ## Import
 

@@ -181,6 +181,7 @@ func (p *VStackProvider) DataSources(ctx context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		// NewExampleDataSource, // Uncomment if you have additional data sources
 		NewVstackVMGetDataSource,
+		NewVstackVMProfileDataSource,
 	}
 }
 

@@ -89,10 +89,17 @@ func MapRespToState(resp vstack_api.VmGetResult, state models.VMResourceModel) (
 	// Map the validated and converted fields to the VMResourceModel struct.
 	state.ID = types.Int64Value(resp.Data.ID)
 	state.Name = types.StringValue(resp.Data.Name)
+	desc := ""
 	if resp.Data.Description != nil {
-		state.Description = types.StringValue(*resp.Data.Description)
-	} else {
+		desc = *resp.Data.Description
+	}
+
+	if desc == "" {
+		// If empty or nil, treat as null
 		state.Description = types.StringNull()
+	} else {
+		// Non-empty string
+		state.Description = types.StringValue(desc)
 	}
 	state.CPUs = types.Int64Value(resp.Data.CPUs)
 	state.RAM = types.Int64Value(ConvertBytesToMb(resp.Data.RAM))

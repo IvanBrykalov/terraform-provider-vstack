@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -94,6 +95,7 @@ func (r *VstackVMResource) Schema(ctx context.Context, req resource.SchemaReques
 				Computed:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"boot_media": schema.Int64Attribute{
@@ -102,6 +104,7 @@ func (r *VstackVMResource) Schema(ctx context.Context, req resource.SchemaReques
 				Computed:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"vcpu_class": schema.Int64Attribute{
@@ -110,6 +113,7 @@ func (r *VstackVMResource) Schema(ctx context.Context, req resource.SchemaReques
 				Computed:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"os_type": schema.Int64Attribute{
@@ -118,19 +122,23 @@ func (r *VstackVMResource) Schema(ctx context.Context, req resource.SchemaReques
 				Computed:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"os_profile": schema.StringAttribute{
 				Description: "Operating system profile for the virtual machine.",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"vdc_id": schema.Int64Attribute{
 				Description: "Virtual Data Center ID for the virtual machine.",
 				Required:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"node": schema.Int64Attribute{
 				Description: "Node on which the VM is running.",
@@ -138,6 +146,7 @@ func (r *VstackVMResource) Schema(ctx context.Context, req resource.SchemaReques
 				Computed:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"uefi": schema.StringAttribute{
@@ -206,7 +215,7 @@ func (r *VstackVMResource) Schema(ctx context.Context, req resource.SchemaReques
 			},
 			"guest": schema.SingleNestedAttribute{
 				Description: "Guest customization for the VM.",
-				Optional:    true,
+				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
@@ -225,23 +234,24 @@ func (r *VstackVMResource) Schema(ctx context.Context, req resource.SchemaReques
 					},
 					"users": schema.MapNestedAttribute{
 						Description: "List of users in the guest OS.",
-						Optional:    true,
-						Computed:    true,
+						Required:    true,
+						PlanModifiers: []planmodifier.Map{
+							mapplanmodifier.RequiresReplace(),
+							mapplanmodifier.UseStateForUnknown(),
+						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"ssh_authorized_keys": schema.ListAttribute{
 									Description: "SSH public keys.",
 									ElementType: types.StringType,
 									Optional:    true,
-									Computed:    true,
 									PlanModifiers: []planmodifier.List{
 										listplanmodifier.RequiresReplace(),
 									},
 								},
 								"password": schema.StringAttribute{
 									Description: "Password for the user.",
-									Optional:    true,
-									Computed:    true,
+									Required:    true,
 									PlanModifiers: []planmodifier.String{
 										stringplanmodifier.RequiresReplace(),
 									},
@@ -275,7 +285,6 @@ func (r *VstackVMResource) Schema(ctx context.Context, req resource.SchemaReques
 							"search": schema.StringAttribute{
 								Description: "DNS search domain.",
 								Optional:    true,
-								Computed:    true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
 									stringplanmodifier.RequiresReplace(),
@@ -303,8 +312,7 @@ func (r *VstackVMResource) Schema(ctx context.Context, req resource.SchemaReques
 					},
 					"hostname": schema.StringAttribute{
 						Description: "Hostname for the guest OS.",
-						Optional:    true,
-						Computed:    true,
+						Required:    true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 						},
@@ -403,22 +411,23 @@ func (r *VstackVMResource) Create(ctx context.Context, req resource.CreateReques
 	// 3. Prepare the guest payload for VM creation
 	guestPayload := make(map[string]interface{})
 
+	// Only access plan.Guest if it is non-nil
+
 	// Hostname
 	hostname := plan.Guest.Hostname.ValueString()
 	if hostname != "" {
 		guestPayload["hostname"] = hostname
 	}
 
+	// BootCmds
 	if !plan.Guest.BootCmds.IsNull() && !plan.Guest.BootCmds.IsUnknown() {
 		bootCmds := make([]string, 0)
 		var bootCmdsValues []attr.Value
-		if err := plan.Guest.BootCmds.ElementsAs(context.Background(), &bootCmdsValues, false); err == nil {
+		if err := plan.Guest.BootCmds.ElementsAs(ctx, &bootCmdsValues, false); err == nil {
 			for _, cmd := range bootCmdsValues {
-				// Perform a checked type assertion
 				stringVal, ok := cmd.(basetypes.StringValue)
 				if !ok {
-					// Handle the unexpected type case
-					log.Printf("Warning: cmd is not of type basetypes.StringValue, skipping")
+					log.Printf("Warning: BootCmd is not basetypes.StringValue, skipping.")
 					continue
 				}
 				val := stringVal.ValueString()
@@ -429,40 +438,30 @@ func (r *VstackVMResource) Create(ctx context.Context, req resource.CreateReques
 		} else {
 			log.Printf("Error retrieving BootCmds elements: %v", err)
 		}
-		// Add only if not empty
 		if len(bootCmds) > 0 {
 			guestPayload["boot_cmds"] = bootCmds
 		}
 	}
 
-	// Run commands
+	// RunCmds
 	if !plan.Guest.RunCmds.IsNull() && !plan.Guest.RunCmds.IsUnknown() {
 		runCmds := make([]string, 0)
 		var runCmdsValues []attr.Value
-
-		// Retrieve elements from RunCmds
-		if err := plan.Guest.RunCmds.ElementsAs(context.Background(), &runCmdsValues, false); err == nil {
+		if err := plan.Guest.RunCmds.ElementsAs(ctx, &runCmdsValues, false); err == nil {
 			for _, cmd := range runCmdsValues {
-				// Perform a checked type assertion to basetypes.StringValue
 				stringVal, ok := cmd.(basetypes.StringValue)
 				if !ok {
-					// Log a warning and skip this cmd if the type assertion fails
-					log.Printf("Warning: cmd is not of type basetypes.StringValue, skipping")
+					log.Printf("Warning: RunCmd is not basetypes.StringValue, skipping.")
 					continue
 				}
-
-				// Extract the string value from basetypes.StringValue
 				val := stringVal.ValueString()
 				if val != "" {
 					runCmds = append(runCmds, val)
 				}
 			}
 		} else {
-			// Log an error if ElementsAs fails
 			log.Printf("Error retrieving RunCmds elements: %v", err)
 		}
-
-		// Add runCmds to guestPayload only if it's not empty
 		if len(runCmds) > 0 {
 			guestPayload["run_cmds"] = runCmds
 		}
@@ -474,11 +473,11 @@ func (r *VstackVMResource) Create(ctx context.Context, req resource.CreateReques
 		guestPayload["ssh_password_auth"] = sshPasswordAuth
 	}
 
-	// Resolver payload
-	resolverPayload := make(map[string]interface{})
-
-	// Name servers
+	// Resolver
 	if plan.Guest.Resolver != nil {
+		resolverPayload := make(map[string]interface{})
+
+		// Name servers
 		if len(plan.Guest.Resolver.NameServers) > 0 {
 			nsList := make([]string, 0, len(plan.Guest.Resolver.NameServers))
 			for _, ns := range plan.Guest.Resolver.NameServers {
@@ -491,79 +490,80 @@ func (r *VstackVMResource) Create(ctx context.Context, req resource.CreateReques
 				resolverPayload["name_server"] = nsList
 			}
 		}
+
 		// Search domain
 		searchDomain := plan.Guest.Resolver.Search.ValueString()
 		if searchDomain != "" {
 			resolverPayload["search"] = searchDomain
 		}
-	}
 
-	// Add "resolver" to guest only if there are values
-	if len(resolverPayload) > 0 {
-		guestPayload["resolver"] = resolverPayload
-	}
-	// Add SSHPasswordAuth
-	if plan.Guest != nil && !plan.Guest.SSHPasswordAuth.IsNull() {
-		guestPayload["ssh_password_auth"] = plan.Guest.SSHPasswordAuth.ValueInt64()
+		// Add resolver payload only if not empty
+		if len(resolverPayload) > 0 {
+			guestPayload["resolver"] = resolverPayload
+		}
 	}
 
 	// Users
-	if len(plan.Guest.Users) > 0 {
-		usersPayload := make(map[string]interface{})
 
-		for username, user := range plan.Guest.Users {
-			userPayload := make(map[string]interface{})
+	usersPayload := make(map[string]interface{})
+	for username, user := range plan.Guest.Users {
+		userPayload := make(map[string]interface{})
 
-			// SSH authorized keys
-			if len(user.SSHPublicKeys) > 0 {
-				sshKeys := make([]string, 0, len(user.SSHPublicKeys))
-				for _, key := range user.SSHPublicKeys {
-					keyVal := key.ValueString()
-					if keyVal != "" {
-						sshKeys = append(sshKeys, keyVal)
-					}
-				}
-				if len(sshKeys) > 0 {
-					userPayload["ssh-authorized-keys"] = sshKeys
+		// SSH authorized keys
+		if len(user.SSHPublicKeys) > 0 {
+			sshKeys := make([]string, 0, len(user.SSHPublicKeys))
+			for _, key := range user.SSHPublicKeys {
+				keyVal := key.ValueString()
+				if keyVal != "" {
+					sshKeys = append(sshKeys, keyVal)
 				}
 			}
-
-			// Password
-			pwVal := user.Password.ValueString()
-			if pwVal != "" {
-				userPayload["password"] = pwVal
-			}
-
-			// Add user only if there are any fields
-			if len(userPayload) > 0 {
-				usersPayload[username] = userPayload
+			if len(sshKeys) > 0 {
+				userPayload["ssh-authorized-keys"] = sshKeys
 			}
 		}
 
-		if len(usersPayload) > 0 {
-			guestPayload["users"] = usersPayload
+		// Password
+		pwVal := user.Password.ValueString()
+		if pwVal != "" {
+			userPayload["password"] = pwVal
 		}
 
+		// Add user only if fields are non-empty
+		if len(userPayload) > 0 {
+			usersPayload[username] = userPayload
+		}
+	}
+	if len(usersPayload) > 0 {
+		guestPayload["users"] = usersPayload
 	}
 
-	// 4. Prepare the request for VM creation using helper.BuildJSONRPCRequest
+	// 4. Prepare the request for VM creation
 	params := map[string]interface{}{
 		"name":          plan.Name.ValueString(),
-		"description":   plan.Description.ValueString(),
 		"cpus":          plan.CPUs.ValueInt64(),
 		"ram":           helper.ConvertMbToBytes(plan.RAM.ValueInt64()),
-		"cpu_priority":  plan.CPUPriority.ValueInt64(),
 		"boot_media":    plan.BootMedia.ValueInt64(),
 		"vcpu_class":    plan.VcpuClass.ValueInt64(),
 		"os_type":       plan.OsType.ValueInt64(),
 		"os_profile":    plan.OsProfile.ValueString(),
 		"vdc_id":        plan.VdcID.ValueInt64(),
 		"pool_selector": plan.PoolSelector.ValueString(),
-		"guest":         guestPayload,
 		"disks":         helper.FormatDisks(plan.Disks),
+		"description":   plan.Description.ValueString(),
 	}
 
-	// Create the JSON-RPC request
+	// Attach guest payload only if we have data
+	if len(guestPayload) > 0 {
+		params["guest"] = guestPayload
+	}
+
+	if plan.CPUPriority.IsNull() || plan.CPUPriority.IsUnknown() {
+		params["cpu_priority"] = 1
+	} else {
+		params["cpu_priority"] = plan.CPUPriority.ValueInt64()
+	}
+
 	requestCreatePayload := helper.BuildJSONRPCRequest("vms-create", params)
 
 	// 5. Call the API to create the VM
@@ -581,53 +581,51 @@ func (r *VstackVMResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	// 7. Retrieve the mutex for the new VM and lock it
-	mu, err := helper.GetVMLock(vmID)
-	if err != nil {
-		resp.Diagnostics.AddError("Error on GetVMLock", err.Error())
+	mu, lockErr := helper.GetVMLock(vmID)
+	if lockErr != nil {
+		resp.Diagnostics.AddError("Error on GetVMLock", lockErr.Error())
 		return
 	}
 	mu.Lock()
 	defer mu.Unlock()
 
-	// 8. Manage VM state (start/stop) based on the plan
+	// 8. Manage VM state (start/stop) based on plan.Action
 	action := strings.ToLower(plan.Action.ValueString())
-
 	switch action {
 	case "start":
-		// Execute the "start" action
 		if err := helper.PerformAction(r.Client, r.AuthCookie, r.BaseURL, vmID, "start"); err != nil {
 			resp.Diagnostics.AddError("Error starting VM", err.Error())
 			return
 		}
 	case "stop":
-		// Check the current status of the VM
+		// Check if we need to start before we can stop
 		isRunning, err := helper.CheckIfVMIsRunning(r.Client, r.AuthCookie, r.BaseURL, vmID)
 		if err != nil {
 			resp.Diagnostics.AddError("Error checking VM status", err.Error())
 			return
 		}
 
+		// If newly created or not running, start + stop
 		if apiCreateResponse.Data.OperStatus == helper.Status.Created || !isRunning {
-			// If status is "Created" or VM is not running, start and then stop
 			if err := helper.PerformAction(r.Client, r.AuthCookie, r.BaseURL, vmID, "start"); err != nil {
 				resp.Diagnostics.AddError("Error starting VM before stopping", err.Error())
 				return
 			}
 		}
-
-		// Stop the VM
+		// Stop
 		if err := helper.PerformAction(r.Client, r.AuthCookie, r.BaseURL, vmID, "stop"); err != nil {
 			resp.Diagnostics.AddError("Error stopping VM", err.Error())
 			return
 		}
 	case "":
-		// If 'action' is not set, do nothing
+		// No action specified, do nothing
 	default:
-		resp.Diagnostics.AddError("Invalid Action", fmt.Sprintf("Unsupported action '%s'. Supported actions are 'start' and 'stop'.", action))
+		resp.Diagnostics.AddError("Invalid Action",
+			fmt.Sprintf("Unsupported action '%s'. Supported actions are 'start' or 'stop'.", action))
 		return
 	}
 
-	// 9. Retrieve the full information of the VM to set the state
+	// 9. Retrieve the full VM details
 	requestReadVMPayload := helper.BuildJSONRPCRequest("vm-get", map[string]interface{}{
 		"id": vmID,
 	})

@@ -10,8 +10,8 @@ The Terraform vStack Provider allows you to manage vStack resources using HashiC
 * Comprehensive Testing: Includes acceptance tests to ensure resource integrity and provider reliability.
 
 ## Prerequisites
-* Terraform: Version 1.3.0 or higher.
-* Go: Version 1.16 or higher (required for building the provider).
+* Terraform: Version 1.6.0 or higher.
+* Go: Version 1.22.7 or higher (required for building the provider).
 * vStack Account: Access credentials for your vStack environment.
 
 ## Installation

@@ -77,7 +77,6 @@ func (d *VstackVMGetDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"description": schema.StringAttribute{
 				Description: "Description of the virtual machine.",
-				Optional:    true,
 				Computed:    true,
 			},
 			"cpus": schema.Int64Attribute{
@@ -137,7 +136,6 @@ func (d *VstackVMGetDataSource) Schema(ctx context.Context, req datasource.Schem
 				Computed:    true,
 			},
 			"pool_selector": schema.StringAttribute{
-				Optional:    true,
 				Computed:    true,
 				Description: "The pool where the virtual machine resides.",
 			},
@@ -155,12 +153,10 @@ func (d *VstackVMGetDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"action": schema.StringAttribute{
 				Description: "Action to perform on the VM (e.g., 'start', 'stop').",
-				Optional:    true,
 				Computed:    true,
 			},
 			"guest": schema.SingleNestedAttribute{
 				Description: "Guest customization for the VM.",
-				Optional:    true,
 				Computed:    true,
 
 				Attributes: map[string]schema.Attribute{
@@ -184,12 +180,10 @@ func (d *VstackVMGetDataSource) Schema(ctx context.Context, req datasource.Schem
 								"ssh_authorized_keys": schema.ListAttribute{
 									Description: "SSH public keys.",
 									ElementType: types.StringType,
-									Optional:    true,
 									Computed:    true,
 								},
 								"password": schema.StringAttribute{
 									Description: "Password for the user.",
-									Optional:    true,
 									Computed:    true,
 								},
 							},

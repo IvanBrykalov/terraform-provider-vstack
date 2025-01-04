@@ -79,6 +79,10 @@ func (r *VstackNicResource) Schema(ctx context.Context, req resource.SchemaReque
 			"mac": schema.StringAttribute{
 				Description: "MAC address of the NIC.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"ratelimit_mbits": schema.Int64Attribute{
 				Description: "Rate limit in Mbps for the NIC.",
@@ -165,7 +169,7 @@ func (r *VstackNicResource) Create(ctx context.Context, req resource.CreateReque
 		"slot":       plan.Slot.ValueInt64(),
 	}
 
-	if !plan.RatelimitMbits.IsNull() && plan.RatelimitMbits.ValueInt64() != 0 {
+	if !plan.RatelimitMbits.IsNull() {
 		params["ratelimit_mbits"] = plan.RatelimitMbits.ValueInt64()
 	}
 

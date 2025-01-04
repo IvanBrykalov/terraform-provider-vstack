@@ -88,3 +88,24 @@ type UserModel struct {
 	SSHPublicKeys []types.String `tfsdk:"ssh_authorized_keys"` // List of SSH authorized public keys for the user.
 	Password      types.String   `tfsdk:"password"`            // Password for the user account.
 }
+
+// VMProfileDataModel describes the entire structure
+// that will be stored in the Terraform state.
+type VMProfileDataModel struct {
+	OsTypes []OsTypeModel `tfsdk:"os_types"`
+}
+
+// OsTypeModel represents a single object in the os_types list.
+type OsTypeModel struct {
+	ID       int64          `tfsdk:"id"`       // ID os_type, ex. 6
+	Name     string         `tfsdk:"name"`     // Name os_type, ex. Linux
+	Profiles []ProfileModel `tfsdk:"profiles"` // List of profiles
+}
+
+// ProfileModel describes an object (OS distributive) in the profiles list within OsType.
+type ProfileModel struct {
+	ID          int64  `tfsdk:"id"`          // ID os_profile, ex. 4001
+	Name        string `tfsdk:"name"`        // Name os_profile, ex. Ubuntu 20.04.6 v2
+	Description string `tfsdk:"description"` // Description os_profile, ex. Ubuntu 20.04.6 v2
+	MinSize     int64  `tfsdk:"min_size"`    // MinSize in bytes os_profile, ex. 3670016000
+}
