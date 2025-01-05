@@ -12,6 +12,7 @@ import (
 )
 
 // providerConfigTemplate is a template for the provider configuration using environment variables.
+
 const providerConfigTemplate = `
 variable "host" {
   type        = string
@@ -29,6 +30,29 @@ provider "vstack" {
   username = var.username
   password = var.password
   host     = var.host
+}
+
+variable "vdc_id" {
+  type        = number
+}
+
+variable network_id {
+  type        = number
+}
+
+variable "os_profile" {
+  type        = string
+  default     = "4001"
+}
+
+variable ip_address {
+  type        = string
+  default     = "192.168.0.100"
+}
+
+variable "pool_selector" {
+  type        = string
+  default     = "14061357726568775332"
 }
 `
 
@@ -52,7 +76,6 @@ func TestMain(m *testing.M) {
 		"TF_VAR_password",
 		"TF_VAR_vdc_id",
 		"TF_VAR_network_id",
-		"TF_VAR_vm_id",
 	}
 
 	var missingVars []string

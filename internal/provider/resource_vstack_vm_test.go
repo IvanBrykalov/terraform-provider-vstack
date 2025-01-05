@@ -12,9 +12,6 @@ import (
 func TestAccVStackVM(t *testing.T) {
 	// Define the Terraform configuration template for the resource.
 	resourceConfigTemplate := `
-variable "vdc_id" {
-  type        = number
-}
 
 resource "vstack_vm" "test_vm2" {
   name          = "test-vm2"
@@ -24,10 +21,9 @@ resource "vstack_vm" "test_vm2" {
   cpu_priority  = 10
   boot_media    = 0
   vcpu_class    = 1
-  os_type       = 6
-  os_profile    = "4001"
+  os_profile    = var.os_profile
   vdc_id        = var.vdc_id
-  pool_selector = "14061357726568775332"
+  pool_selector = var.pool_selector
 
   action = "start"
 
@@ -81,10 +77,6 @@ resource "vstack_vm" "test_vm2" {
 
 	// Define the updated Terraform configuration template for the Update step.
 	resourceConfigUpdateTemplate := `
-variable "vdc_id" {
-  type        = number
-}
-
 resource "vstack_vm" "test_vm2" {
   name          = "test-vm2"
   description   = "This is a test VM for testing purposes."
@@ -93,10 +85,9 @@ resource "vstack_vm" "test_vm2" {
   cpu_priority  = 10
   boot_media    = 0
   vcpu_class    = 1
-  os_type       = 6
-  os_profile    = "4001"
+  os_profile    = var.os_profile
   vdc_id        = var.vdc_id
-  pool_selector = "14061357726568775332"
+  pool_selector = var.pool_selector
 
   action = "stop"
 
@@ -176,7 +167,7 @@ resource "vstack_vm" "test_vm2" {
 					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "cpu_priority", "10"),
 					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "boot_media", "0"),
 					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "vcpu_class", "1"),
-					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "os_type", "6"),
+					resource.TestCheckResourceAttrSet("vstack_vm.test_vm2", "os_type"),
 					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "os_profile", "4001"),
 					resource.TestCheckResourceAttrSet("vstack_vm.test_vm2", "node"),
 					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "action", "start"),
@@ -225,7 +216,7 @@ resource "vstack_vm" "test_vm2" {
 					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "cpu_priority", "10"),
 					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "boot_media", "0"),
 					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "vcpu_class", "1"),
-					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "os_type", "6"),
+					resource.TestCheckResourceAttrSet("vstack_vm.test_vm2", "os_type"),
 					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "os_profile", "4001"),
 					resource.TestCheckResourceAttrSet("vstack_vm.test_vm2", "node"),
 					resource.TestCheckResourceAttr("vstack_vm.test_vm2", "action", "stop"),

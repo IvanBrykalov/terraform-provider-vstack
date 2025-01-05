@@ -12,12 +12,42 @@ import (
 func TestAccVStackVMGetDataSource(t *testing.T) {
 	// Define the Terraform configuration template for the data source.
 	dataSourceConfigTemplate := `
-variable "vm_id" {
-  type        = number
+
+resource "vstack_vm" "test" {
+  name          = "test-vm"
+  description   = "This is a test VM for testing purposes."
+  cpus          = 1
+  ram           = 2048
+  os_profile    = var.os_profile
+  vdc_id        = var.vdc_id
+
+  disks = [
+    {
+      size       = 20
+      slot       = 1
+      label      = "Primary Disk"
+      iops_limit = 200
+      mbps_limit = 256
+    }
+  ]
+
+  # Guest params
+  guest = {
+    hostname           = "test_vm"
+    users = {
+      root = {
+        ssh_authorized_keys = []
+        password = "rootpassword"
+      }
+    }
+  }
 }
+
 data "vstack_vm_get" "test" {
-  id = var.vm_id
-}`
+	id = vstack_vm.test.id
+    depends_on      = [vstack_vm.test]
+}
+`
 	// Combine the provider configuration template with the data source configuration template.
 	dataSourceConfig := providerConfigTemplate + dataSourceConfigTemplate
 

@@ -87,5 +87,6 @@ jobs:
           TF_VAR_password: ${{ secrets.TF_VAR_PASSWORD }}
           TF_VAR_username: ${{ secrets.TF_VAR_USERNAME }}
           TF_VAR_host: ${{ secrets.TF_VAR_HOST }}
+          TF_VAR_ip_address: ${{ secrets.TF_VAR_IP_ADDRESS }}
         run: go test -v -cover ./internal/provider/ -count=1
         timeout-minutes: 10

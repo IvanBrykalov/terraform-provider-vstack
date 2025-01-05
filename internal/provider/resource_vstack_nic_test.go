@@ -18,16 +18,12 @@ func TestAccVStackNIC(t *testing.T) {
 	if networkIdStr == "" {
 		t.Fatal("Error in TestAccVStackNIC test function: Environment variable TF_VAR_network_id must be set")
 	}
-
+	ipAddress := os.Getenv("TF_VAR_ip_address")
+	if ipAddress == "" {
+		ipAddress = "192.168.0.100"
+	}
 	// Define the Terraform configuration template for the resource.
 	resourceConfigTemplate := `
-variable "vdc_id" {
-  type     = number
-}
-variable "network_id" {
-  type     = number
-}
-
 resource "vstack_vm" "test_vm3" {
   name          = "test-vm3"
   description   = "This is a test VM for testing purposes."
@@ -36,10 +32,9 @@ resource "vstack_vm" "test_vm3" {
   cpu_priority  = 10
   boot_media    = 0
   vcpu_class    = 1
-  os_type       = 6
-  os_profile    = "4001"
+  os_profile    = var.os_profile
   vdc_id        = var.vdc_id
-  pool_selector = "14061357726568775332"
+  pool_selector = var.pool_selector
 
   action = "start"
 
@@ -87,7 +82,7 @@ resource "vstack_nic" "test_vm3_nic1" {
   vm_id      = vstack_vm.test_vm3.id
   network_id = var.network_id
   slot       = 1
-  address    = "192.168.0.100"
+  address    = var.ip_address
   
   # Ensure the NIC is created after the VM
   depends_on = [vstack_vm.test_vm3]
@@ -96,13 +91,6 @@ resource "vstack_nic" "test_vm3_nic1" {
 
 	// Define the updated Terraform configuration template for the Update step.
 	resourceConfigUpdateTemplate := `
-variable "vdc_id" {
- type     = number
-}
-variable "network_id" {
- type     = number
-}
-
 resource "vstack_vm" "test_vm3" {
   name          = "test-vm3"
   description   = "This is a test VM for testing purposes."
@@ -111,10 +99,9 @@ resource "vstack_vm" "test_vm3" {
   cpu_priority  = 10
   boot_media    = 0
   vcpu_class    = 1
-  os_type       = 6
-  os_profile    = "4001"
+  os_profile    = var.os_profile
   vdc_id        = var.vdc_id
-  pool_selector = "14061357726568775332"
+  pool_selector = var.pool_selector
 
   action = "start"
 
@@ -162,7 +149,7 @@ resource "vstack_nic" "test_vm3_nic1" {
  vm_id           = vstack_vm.test_vm3.id
  network_id      = var.network_id
  slot            = 1
- address         = "192.168.0.100"
+ address         = var.ip_address
  ratelimit_mbits = 40
  depends_on      = [vstack_vm.test_vm3]
 }
@@ -205,7 +192,7 @@ resource "vstack_nic" "test_vm3_nic2" {
 					// Check specific attributes of the NIC.
 					resource.TestCheckResourceAttr("vstack_nic.test_vm3_nic1", "network_id", networkIdStr),
 					resource.TestCheckResourceAttr("vstack_nic.test_vm3_nic1", "slot", "1"),
-					resource.TestCheckResourceAttr("vstack_nic.test_vm3_nic1", "address", "192.168.0.100"),
+					resource.TestCheckResourceAttr("vstack_nic.test_vm3_nic1", "address", ipAddress),
 					resource.TestCheckResourceAttr("vstack_nic.test_vm3_nic1", "ratelimit_mbits", "0"),
 					// Ensure the MAC address is set (computed attribute).
 					resource.TestCheckResourceAttrSet("vstack_nic.test_vm3_nic1", "mac"),
