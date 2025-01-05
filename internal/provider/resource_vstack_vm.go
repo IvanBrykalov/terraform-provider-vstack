@@ -618,7 +618,10 @@ func (r *VstackVMResource) Create(ctx context.Context, req resource.CreateReques
 			return
 		}
 	case "":
-		// No action specified, do nothing
+		if err := helper.PerformAction(r.Client, r.AuthCookie, r.BaseURL, vmID, "start"); err != nil {
+			resp.Diagnostics.AddError("Error starting VM", err.Error())
+			return
+		}
 	default:
 		resp.Diagnostics.AddError("Invalid Action",
 			fmt.Sprintf("Unsupported action '%s'. Supported actions are 'start' or 'stop'.", action))

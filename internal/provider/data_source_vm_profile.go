@@ -14,7 +14,7 @@ import (
 	"terraform-provider-vstack/internal/vstack_api"
 )
 
-// VstackVMProfileDataSource implements a data source for retrieving OS types and their profiles.
+// vStackVMProfileDataSource implements a data source for retrieving OS types and their profiles.
 type VstackVMProfileDataSource struct {
 	Client     *http.Client
 	BaseURL    string

@@ -51,15 +51,15 @@ func (p *VStackProvider) Schema(ctx context.Context, req provider.SchemaRequest,
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"host": schema.StringAttribute{
-				MarkdownDescription: "API host for the Vstack provider.",
+				MarkdownDescription: "API host for the vStack provider.",
 				Required:            true,
 			},
 			"username": schema.StringAttribute{
-				MarkdownDescription: "Username for Vstack API.",
+				MarkdownDescription: "Username for vStack API.",
 				Required:            true,
 			},
 			"password": schema.StringAttribute{
-				MarkdownDescription: "Password for Vstack API.",
+				MarkdownDescription: "Password for vStack API.",
 				Required:            true,
 				Sensitive:           true,
 			},
@@ -68,7 +68,7 @@ func (p *VStackProvider) Schema(ctx context.Context, req provider.SchemaRequest,
 }
 
 // Configure initializes the provider with the provided configuration.
-// It authenticates with the Vstack API and stores the authentication cookie.
+// It authenticates with the vStack API and stores the authentication cookie.
 func (p *VStackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	tflog.Info(ctx, "Starting provider configuration")
 	fmt.Println("Starting provider configuration")
@@ -112,7 +112,7 @@ func (p *VStackProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	// Execute authentication request
 	authResponse, err := p.client.Do(authRequest)
 	if err != nil {
-		resp.Diagnostics.AddError("Error authenticating with Vstack", err.Error())
+		resp.Diagnostics.AddError("Error authenticating with vStack", err.Error())
 		return
 	}
 	defer func() {

@@ -25,6 +25,6 @@ provider "vstack" {
 
 ### Required
 
-- `host` (String) API host for the Vstack provider.
-- `password` (String, Sensitive) Password for Vstack API.
-- `username` (String) Username for Vstack API.
+- `host` (String) API host for the vStack provider.
+- `password` (String, Sensitive) Password for vStack API.
+- `username` (String) Username for vStack API.
