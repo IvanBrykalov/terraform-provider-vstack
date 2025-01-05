@@ -204,3 +204,5 @@ This project is licensed under the **MIT License**.
 
 ## Support
 If you encounter any issues or have questions, please open an issue on the GitHub Issues page.
+
+For other reasons, you can write to the following email `ivbrykalov@gmail.com`
